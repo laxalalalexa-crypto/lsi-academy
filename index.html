@@ -1,169 +1,362 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSI Academy — Main Curriculum V1</title>
-    <style>
-        :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --accent-color: #2ea043;
-            --text-main: #c9d1d9;
-            --text-bright: #ffffff;
-            --border-color: #30363d;
+<script>
+      // Key a mausar iti LocalStorage
+      const STORAGE_KEY = "kian_portfolio_data_v1";
+
+      // Dagiti default values no awan pay ti naisave
+      const defaultProfileData = {
+        name: "KIAN JAMES",
+        title: "Service Portfolio & Developer",
+        country: "Philippines",
+        age: "16",
+        quote: "Striving for excellence in service, scouting, and digital development."
+      };
+
+      const defaultSkills = [
+        ["Web Development", "HTML, CSS, JavaScript dynamic UI", 85, "★"],
+        ["Discord Bot Dev", "Python & discord.py automation", 90, "★"]
+      ];
+
+      const defaultProjects = [
+        ["Web Development", "Service Portfolio", "Interactive personal showcase website.", "HTML / CSS / JS"]
+      ];
+
+      const defaultExperience = [
+        ["2024 - PRESENT", "Discord Bot Manager", "Maintains automated admissions and database management bots."]
+      ];
+
+      const defaultAwards = [
+        ["🏅", "Scouting Achievement", "Boy Scouts of the Philippines"]
+      ];
+
+      // Global State variables
+      let profileData = { ...defaultProfileData };
+      let skills = [...defaultSkills];
+      let projects = [...defaultProjects];
+      let experience = [...defaultExperience];
+      let awards = [...defaultAwards];
+
+      const ADMIN_PASSWORD = "admin"; // Isukat mo ti password a kayat mo
+
+      // Load saved data manipud LocalStorage
+      function loadSavedData() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.profileData) profileData = parsed.profileData;
+            if (parsed.skills) skills = parsed.skills;
+            if (parsed.projects) projects = parsed.projects;
+            if (parsed.experience) experience = parsed.experience;
+            if (parsed.awards) awards = parsed.awards;
+          }
+        } catch (err) {
+          console.error("Error loading saved data:", err);
+        }
+      }
+
+      // Isave dagiti updates iti LocalStorage
+      async function persistData() {
+        try {
+          const dataToSave = {
+            profileData,
+            skills,
+            projects,
+            experience,
+            awards
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        } catch (err) {
+          console.error("Error persisting data:", err);
+        }
+      }
+
+      // Render Functions
+      function renderAll() {
+        // I-update ti Profile Info iti Page
+        const nameEl = document.getElementById("profileName");
+        const titleEl = document.getElementById("profileTitle");
+        const countryEl = document.getElementById("profileCountry");
+        const ageEl = document.getElementById("profileAge");
+        const quoteEl = document.getElementById("profileQuote");
+
+        if (nameEl) nameEl.textContent = profileData.name;
+        if (titleEl) titleEl.textContent = profileData.title;
+        if (countryEl) countryEl.textContent = profileData.country;
+        if (ageEl) ageEl.textContent = profileData.age;
+        if (quoteEl) quoteEl.textContent = profileData.quote;
+
+        // Render Skills
+        const skillGrid = document.getElementById("skillGrid");
+        if (skillGrid) {
+          skillGrid.innerHTML = "";
+          skills.forEach((s) => {
+            const e = document.createElement("div");
+            e.className = "card";
+            e.innerHTML = `
+              <h3>${s[0]} <span>${s[2]}%</span></h3>
+              <p>${s[1]}</p>
+            `;
+            skillGrid.appendChild(e);
+          });
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
+        // Render Projects
+        const projectGrid = document.getElementById("projectGrid");
+        if (projectGrid) {
+          projectGrid.innerHTML = "";
+          projects.forEach((p) => {
+            const e = document.createElement("div");
+            e.className = "card";
+            e.innerHTML = `
+              <small>${p[0]}</small>
+              <h3>${p[1]}</h3>
+              <p>${p[2]}</p>
+              <div class="tags">${p[3]}</div>
+            `;
+            projectGrid.appendChild(e);
+          });
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 40px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        // Render Experience
+        const expGrid = document.getElementById("expGrid");
+        if (expGrid) {
+          expGrid.innerHTML = "";
+          experience.forEach((x) => {
+            const e = document.createElement("div");
+            e.className = "card";
+            e.innerHTML = `
+              <small>${x[0]}</small>
+              <h3>${x[1]}</h3>
+              <p>${x[2]}</p>
+            `;
+            expGrid.appendChild(e);
+          });
         }
 
-        header {
-            text-align: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+        // Render Awards
+        const awardGrid = document.getElementById("awardGrid");
+        if (awardGrid) {
+          awardGrid.innerHTML = "";
+          awards.forEach((a) => {
+            const e = document.createElement("div");
+            e.className = "card";
+            e.innerHTML = `
+              <div class="medal">${a[0]}</div>
+              <h3>${a[1]}</h3>
+              <p>${a[2]}</p>
+            `;
+            e.onclick = () => openModal("AWARD & MILESTONE", a[1], `Recognition received through ${a[2]}.`, "<b>Category</b><br>Service, academy or achievement recognition");
+            awardGrid.appendChild(e);
+          });
+        }
+      }
+
+      // Modal Controls
+      function openModal(tag, title, text, extra) {
+        document.getElementById("mTag").textContent = tag;
+        document.getElementById("mTitle").textContent = title;
+        document.getElementById("mText").textContent = text;
+        document.getElementById("mExtra").innerHTML = extra;
+        document.getElementById("modal").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      document.getElementById("close").onclick = closeModal;
+      document.getElementById("backdrop").onclick = closeModal;
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      document.querySelectorAll(".photo").forEach((p) => {
+        p.onclick = () => openModal("GALLERY", p.dataset.title, p.dataset.text, "<b>Gallery slot</b><br>Replace this placeholder with your own image when you are ready.");
+      });
+
+      // Dark / Light Theme
+      document.getElementById("theme").onclick = () => {
+        document.body.classList.toggle("dark");
+        document.getElementById("theme").textContent = document.body.classList.contains("dark") ? "☀" : "☾";
+        localStorage.setItem("kian-theme", document.body.classList.contains("dark") ? "dark" : "light");
+      };
+
+      if (localStorage.getItem("kian-theme") === "dark") {
+        document.body.classList.add("dark");
+        document.getElementById("theme").textContent = "☀";
+      }
+
+      // Admin Button Trigger
+      document.getElementById("adminBtn").onclick = () => {
+        const pass = prompt("Enter Admin Password:");
+        if (pass === ADMIN_PASSWORD) {
+          showAdminPanel("profile");
+        } else if (pass !== null) {
+          alert("Incorrect password! Access denied.");
+        }
+      };
+
+      // Admin Panel UI Builder
+      function showAdminPanel(tab) {
+        let content = `
+          <div class="admin-tabs" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap:wrap;">
+            <button class="admin-tab ${tab === "profile" ? "active" : ""}" onclick="showAdminPanel('profile')">Profile</button>
+            <button class="admin-tab ${tab === "skills" ? "active" : ""}" onclick="showAdminPanel('skills')">Skills</button>
+            <button class="admin-tab ${tab === "projects" ? "active" : ""}" onclick="showAdminPanel('projects')">Projects</button>
+            <button class="admin-tab ${tab === "experience" ? "active" : ""}" onclick="showAdminPanel('experience')">Experience</button>
+            <button class="admin-tab ${tab === "awards" ? "active" : ""}" onclick="showAdminPanel('awards')">Awards</button>
+          </div>
+        `;
+
+        if (tab === "profile") {
+          content += `
+            <form class="admin-form" onsubmit="saveProfile(event)">
+              <label>Name / Display Title</label>
+              <input type="text" id="admName" value="${profileData.name}" required>
+              <label>Sub-Headline / Role</label>
+              <input type="text" id="admTitle" value="${profileData.title}" required>
+              <label>Country</label>
+              <input type="text" id="admCountry" value="${profileData.country}" required>
+              <label>Age</label>
+              <input type="text" id="admAge" value="${profileData.age}" required>
+              <label>Quote</label>
+              <textarea id="admQuote" rows="2" required>${profileData.quote}</textarea>
+              <button type="submit" style="margin-top:10px;">Save Profile Changes</button>
+            </form>
+          `;
+        } else if (tab === "skills") {
+          content += `<div class="item-list-edit">`;
+          skills.forEach((s, i) => {
+            content += `<div class="item-row" style="display:flex; justify-content:space-between; margin-bottom:6px;"><span><b>${s[0]}</b> (${s[2]}%)</span><button class="del-btn" onclick="deleteItem('skills',${i})">Delete</button></div>`;
+          });
+          content += `</div><form class="admin-form" onsubmit="addSkill(event)" style="margin-top:15px;">
+            <h4>Add New Skill</h4>
+            <input type="text" id="sTitle" placeholder="Skill Name" required>
+            <input type="text" id="sDesc" placeholder="Description" required>
+            <input type="number" id="sProf" placeholder="Proficiency % (e.g. 90)" required>
+            <button type="submit" style="margin-top:10px;">Add Skill</button>
+          </form>`;
+        } else if (tab === "projects") {
+          content += `<div class="item-list-edit">`;
+          projects.forEach((p, i) => {
+            content += `<div class="item-row" style="display:flex; justify-content:space-between; margin-bottom:6px;"><span><b>${p[1]}</b></span><button class="del-btn" onclick="deleteItem('projects',${i})">Delete</button></div>`;
+          });
+          content += `</div><form class="admin-form" onsubmit="addProject(event)" style="margin-top:15px;">
+            <h4>Add New Project</h4>
+            <input type="text" id="pCategory" placeholder="Category (e.g. Web Development)" required>
+            <input type="text" id="pTitle" placeholder="Project Title" required>
+            <input type="text" id="pDesc" placeholder="Description" required>
+            <input type="text" id="pTags" placeholder="Tags / Details" required>
+            <button type="submit" style="margin-top:10px;">Add Project</button>
+          </form>`;
+        } else if (tab === "experience") {
+          content += `<div class="item-list-edit">`;
+          experience.forEach((x, i) => {
+            content += `<div class="item-row" style="display:flex; justify-content:space-between; margin-bottom:6px;"><span><b>${x[1]}</b></span><button class="del-btn" onclick="deleteItem('experience',${i})">Delete</button></div>`;
+          });
+          content += `</div><form class="admin-form" onsubmit="addExperience(event)" style="margin-top:15px;">
+            <h4>Add New Experience</h4>
+            <input type="text" id="xDate" placeholder="Date / Period (e.g. MAY 2024 - PRESENT)" required>
+            <input type="text" id="xTitle" placeholder="Organization / Title" required>
+            <textarea id="xDesc" placeholder="Role Description & Details" rows="2" required></textarea>
+            <button type="submit" style="margin-top:10px;">Add Experience</button>
+          </form>`;
+        } else if (tab === "awards") {
+          content += `<div class="item-list-edit">`;
+          awards.forEach((a, i) => {
+            content += `<div class="item-row" style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>${a[0]} <b>${a[1]}</b></span><button class="del-btn" onclick="deleteItem('awards',${i})">Delete</button></div>`;
+          });
+          content += `</div><form class="admin-form" onsubmit="addAward(event)" style="margin-top:15px;">
+            <h4>Add New Award</h4>
+            <input type="text" id="aIcon" placeholder="Icon / Emoji (e.g. 🏅)" required>
+            <input type="text" id="aTitle" placeholder="Award Name" required>
+            <input type="text" id="aOrg" placeholder="Organization / Issuer" required>
+            <button type="submit" style="margin-top:10px;">Add Award</button>
+          </form>`;
         }
 
-        h1 {
-            color: var(--text-bright);
-            font-size: 2rem;
-            margin: 0 0 5px 0;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        openModal("ADMIN CONTROL PANEL", "Website Settings & Content Manager", "Manage your live website content directly from this panel.", content);
+      }
+
+      // Actions & Save handlers
+      async function saveProfile(e) {
+        e.preventDefault();
+        profileData.name = document.getElementById("admName").value;
+        profileData.title = document.getElementById("admTitle").value;
+        profileData.country = document.getElementById("admCountry").value;
+        profileData.age = document.getElementById("admAge").value;
+        profileData.quote = document.getElementById("admQuote").value;
+        await persistData();
+        renderAll();
+        alert("Profile updated and saved successfully!");
+        closeModal();
+      }
+
+      async function deleteItem(type, idx) {
+        if (confirm("Are you sure you want to delete this item?")) {
+          if (type === "skills") skills.splice(idx, 1);
+          if (type === "projects") projects.splice(idx, 1);
+          if (type === "experience") experience.splice(idx, 1);
+          if (type === "awards") awards.splice(idx, 1);
+          await persistData();
+          renderAll();
+          showAdminPanel(type);
         }
+      }
 
-        .version-tag {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: var(--text-bright);
-            font-weight: bold;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-        }
+      async function addSkill(e) {
+        e.preventDefault();
+        skills.push([
+          document.getElementById("sTitle").value,
+          document.getElementById("sDesc").value,
+          parseInt(document.getElementById("sProf").value),
+          "★"
+        ]);
+        await persistData();
+        renderAll();
+        showAdminPanel("skills");
+      }
 
-        .motto-bar {
-            background-color: rgba(46, 160, 67, 0.1);
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            text-align: center;
-            font-weight: bold;
-            padding: 10px;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-            border-radius: 4px;
-        }
+      async function addProject(e) {
+        e.preventDefault();
+        projects.push([
+          document.getElementById("pCategory").value,
+          document.getElementById("pTitle").value,
+          document.getElementById("pDesc").value,
+          document.getElementById("pTags").value
+        ]);
+        await persistData();
+        renderAll();
+        showAdminPanel("projects");
+      }
 
-        .section-title {
-            color: var(--text-bright);
-            border-left: 4px solid var(--accent-color);
-            padding-left: 10px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            font-size: 1.2rem;
-        }
+      async function addExperience(e) {
+        e.preventDefault();
+        experience.push([
+          document.getElementById("xDate").value,
+          document.getElementById("xTitle").value,
+          document.getElementById("xDesc").value
+        ]);
+        await persistData();
+        renderAll();
+        showAdminPanel("experience");
+      }
 
-        .sub-title {
-            color: var(--accent-color);
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-size: 0.95rem;
-        }
+      async function addAward(e) {
+        e.preventDefault();
+        awards.push([
+          document.getElementById("aIcon").value,
+          document.getElementById("aTitle").value,
+          document.getElementById("aOrg").value
+        ]);
+        await persistData();
+        renderAll();
+        showAdminPanel("awards");
+      }
 
-        p {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
-
-        ul {
-            margin-top: 5px;
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.85rem;
-            color: #8b949e;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <span class="version-tag">MAIN CURRICULUM VERSION 1</span>
-        <h1>Luna Sharpshooter Infantry Academy</h1>
-        <div style="color: #8b949e; font-size: 0.9rem;">The Verification Authority — TFA</div>
-    </header>
-
-    <div class="motto-bar">
-        DISCIPLINE • UNITY • PRECISION • EXCELLENCE
-    </div>
-
-    <div class="section-title">CONTENTS</div>
-    <p>To join the Luna Sharpshooter Infantry (LSI), recruits must first complete the academy's enrollment process. This begins with the formal Enlistment Form, followed by the Selection phase, where recruits are evaluated based on their discipline, communication, conduct, and overall capabilities. The process concludes with Final Verification, where recruits must complete the required verification procedures before officially entering the academy.</p>
-    
-    <p>Once admitted, recruits will begin the Luna Sharpshooter Infantry Academy Curriculum, which is designed to develop disciplined and capable infantry personnel. The curriculum introduces recruits to the fundamental knowledge, responsibilities, procedures, and standards expected of an LSI personnel.</p>
-    
-    <p>The academy curriculum consists of several progressive Phases, beginning with basic infantry fundamentals and continuing toward more advanced training. Recruits will be evaluated through written, practical, and oral assessments throughout their academy journey.</p>
-    
-    <p>The curriculum will conclude with a Final Evaluation, where recruits must demonstrate the required knowledge, discipline, teamwork, communication, and overall performance expected of an LSI personnel.</p>
-    
-    <p>Upon successful completion of the academy, qualified recruits may officially graduate and proceed to their assigned responsibilities within the Luna Sharpshooter Infantry. Further specialization, assignments, or advancement may be determined by academy and organizational leadership.</p>
-
-    <div class="section-title">PROCEDURES FOR CERTIFICATE RENEWAL</div>
-    
-    <div class="sub-title">FOR LSI PERSONNEL WITH UP-TO-DATE CERTIFICATES:</div>
-    <ul>
-        <li>The certificate must correspond with the current Main Curriculum Version of the Luna Sharpshooter Infantry Academy.</li>
-        <li>Personnel must remain in good standing within LSI.</li>
-        <li>Personnel must not have received a Dishonorable Discharge from LSI.</li>
-        <li>Personnel must continue to comply with current academy and TFA regulations.</li>
-    </ul>
-
-    <div class="sub-title">FOR LSI PERSONNEL WITH OUTDATED CERTIFICATES:</div>
-    <ul>
-        <li>Personnel must complete the newly introduced requirements necessary for certificate renewal.</li>
-        <li>Requirements already completed under the previous curriculum do not need to be repeated unless specifically required by academy administration.</li>
-        <li>Personnel must remain in good standing within LSI.</li>
-        <li>Personnel must not have received a Dishonorable Discharge from LSI.</li>
-        <li>Personnel must comply with the current Main Curriculum Version and all updated academy requirements.</li>
-    </ul>
-
-    <div class="section-title">ACADEMY OBJECTIVE</div>
-    <p>The Luna Sharpshooter Infantry Academy aims to produce disciplined, professional, and capable infantry personnel who are prepared to fulfill their responsibilities within LSI and uphold the standards of TFA.</p>
-
-    <footer>
-        &copy; Luna Sharpshooter Infantry Academy — TFA. All rights reserved.
-    </footer>
-</div>
-
-</body>
-</html>
+      // Initial Load & Execution
+      loadSavedData();
+      renderAll();
+    </script>
